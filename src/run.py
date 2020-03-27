@@ -1,30 +1,16 @@
-import RPi.GPIO as GPIO
 import time
 import signal
 import sys
 import threading
 import random
 import math
-
-PIN_DISPLAY = 6
-PIN_DATA = 19
-PIN_CLOCK = 13
-
-N = 8
+from .led_cube import SIZE
+from .led_cube_protocol import clear_cube, setup, start_outputting_cube_state
 
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
-
-    GPIO.output(PIN_DATA, GPIO.LOW)
-    for _ in range(N * (N + 1)):
-        GPIO.output(PIN_CLOCK, GPIO.HIGH)
-        GPIO.output(PIN_CLOCK, GPIO.LOW)
-
-    GPIO.output(PIN_DISPLAY, GPIO.HIGH)
-    GPIO.output(PIN_DISPLAY, GPIO.LOW)
-
-    # GPIO.cleanup()
+    clear_cube()
     sys.exit(0)
 
 
@@ -42,11 +28,10 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 class LedCubeController:
-
-    _pixels = [[[0] * N for _ in range(N)] for _ in range(N)]
+    _pixels = [[[0] * SIZE for _ in range(SIZE)] for _ in range(SIZE)]
 
     def turn(self, x, y, z, value):
-        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+        if 0 <= x <= (SIZE - 1) and 0 <= y <= (SIZE - 1) and 0 <= z <= (SIZE - 1):
             self._pixels[x][y][z] = value
 
     def turn_on(self, x, y, z):
@@ -56,21 +41,21 @@ class LedCubeController:
         self.turn(x, y, z, 0)
 
     def is_on(self, x, y, z):
-        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+        if 0 <= x <= (SIZE - 1) and 0 <= y <= (SIZE - 1) and 0 <= z <= (SIZE - 1):
             return self._pixels[x][y][z]
         else:
             return 0
 
     def is_off(self, x, y, z):
-        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+        if 0 <= x <= (SIZE - 1) and 0 <= y <= (SIZE - 1) and 0 <= z <= (SIZE - 1):
             return not self._pixels[x][y][z]
         else:
             return 0
 
     def clear_pixels(self):
-        for i in range(N):
-            for j in range(N):
-                for k in range(N):
+        for i in range(SIZE):
+            for j in range(SIZE):
+                for k in range(SIZE):
                     self.turn_off(i, j, k)
 
 
@@ -94,14 +79,14 @@ class StoppableThread(threading.Thread):
 class SnowThread(StoppableThread):
 
     def stoppable_run(self, controller: LedCubeController):
-        for i in range(N):
-            for j in range(N):
-                for k in reversed(range(N - 1)):
+        for i in range(SIZE):
+            for j in range(SIZE):
+                for k in reversed(range(SIZE - 1)):
                     if controller.is_on(i, j, k):
                         controller.turn_off(i, j, k)
                         controller.turn_on(i, j, k + 1)
 
-        controller.turn_on(random.randint(0, N - 1), random.randint(0, N - 1), 0)
+        controller.turn_on(random.randint(0, SIZE - 1), random.randint(0, SIZE - 1), 0)
 
         time.sleep(0.1)
 
@@ -120,12 +105,12 @@ class WaveThread(StoppableThread):
 
         controller.clear_pixels()
 
-        for i in range(N):
-            for j in range(N):
+        for i in range(SIZE):
+            for j in range(SIZE):
                 distance_from_mid = math.sqrt((3.5 - i) ** 2 + (3.5 - j) ** 2)
                 k = 3.5 + ((max_distance - distance_from_mid) / max_distance) * (self.mid_point_height - 3.5)
                 k = round(k)
-                if 0 <= k <= 7:
+                if 0 <= k <= (SIZE - 1):
                     controller.turn_on(i, j, k)
 
         self.mid_point_height = self.mid_point_height + self.mid_point_velocity
@@ -141,9 +126,9 @@ class SphereThread(StoppableThread):
     MAX_RADIUS = 6
 
     def update_pixels(self, controller: LedCubeController):
-        for i in range(N):
-            for j in range(N):
-                for k in range(N):
+        for i in range(SIZE):
+            for j in range(SIZE):
+                for k in range(SIZE):
                     if math.sqrt((3.5 - i) ** 2 + (3.5 - j) ** 2 + (3.5 - k) ** 2) < self.radius:
                         controller.turn_on(i, j, k)
                     else:
@@ -164,8 +149,8 @@ class SphereThread(StoppableThread):
 class MovingPoint:
 
     def __init__(self):
-        self.position = [random.randint(0, N - 1), random.randint(0, N - 1), random.randint(0, N - 1)]
-        self.velocity = [random.randint(0, N - 1) / 8, random.randint(0, N - 1) / 8, random.randint(0, N - 1) / 8]
+        self.position = [random.randint(0, SIZE - 1), random.randint(0, SIZE - 1), random.randint(0, SIZE - 1)]
+        self.velocity = [random.randint(0, SIZE - 1) / 8, random.randint(0, SIZE - 1) / 8, random.randint(0, SIZE - 1) / 8]
 
     def x_int(self):
         return round(self.position[0])
@@ -186,8 +171,8 @@ class MovingPoint:
         if self.position[i] < 0:
             self.position[i] = 0
             self.velocity[i] = -self.velocity[i]
-        if self.position[i] > 7:
-            self.position[i] = 7
+        if self.position[i] > (SIZE - 1):
+            self.position[i] = SIZE - 1
             self.velocity[i] = -self.velocity[i]
 
 
@@ -200,6 +185,7 @@ class MovingPointsThread(StoppableThread):
 
     def stoppable_run(self, controller: LedCubeController):
         controller.clear_pixels()
+
         for p in self.points:
             controller.turn_on(math.floor(p.position[0]), math.floor(p.position[1]), math.floor(p.position[2]))
             controller.turn_on(math.floor(p.position[0]), math.floor(p.position[1]), math.ceil(p.position[2]))
@@ -210,6 +196,7 @@ class MovingPointsThread(StoppableThread):
             controller.turn_on(math.ceil(p.position[0]), math.ceil(p.position[1]), math.floor(p.position[2]))
             controller.turn_on(math.ceil(p.position[0]), math.ceil(p.position[1]), math.ceil(p.position[2]))
             p.move()
+
         time.sleep(0.1)
 
 
@@ -220,9 +207,9 @@ class PlanesThread(StoppableThread):
         self.d = 1
 
     def stoppable_run(self, controller: LedCubeController):
-        for i in range(N):
-            for j in range(N):
-                for k in range(N):
+        for i in range(SIZE):
+            for j in range(SIZE):
+                for k in range(SIZE):
                     if i == self.i or j == self.i or k == self.i:
                         controller.turn_on(i, j, k)
                     else:
@@ -234,8 +221,8 @@ class PlanesThread(StoppableThread):
             self.i = 0
             self.d = 1
 
-        if self.i > 7:
-            self.i = 7
+        if self.i > (SIZE - 1):
+            self.i = SIZE - 1
             self.d = -1
 
         time.sleep(0.2)
@@ -276,42 +263,6 @@ class ThreadThread(threading.Thread):
 
 ThreadThread().start()
 
-# setup
-GPIO.setmode(GPIO.BCM)
+setup()
 
-GPIO.setwarnings(False)
-GPIO.setup(PIN_DISPLAY, GPIO.OUT)
-GPIO.setup(PIN_DATA, GPIO.OUT)
-GPIO.setup(PIN_CLOCK, GPIO.OUT)
-GPIO.setwarnings(True)
-
-
-def change_output(pin, value):
-    GPIO.output(pin, value)
-
-
-change_output(PIN_DISPLAY, GPIO.LOW)
-change_output(PIN_DATA, GPIO.LOW)
-change_output(PIN_CLOCK, GPIO.LOW)
-
-controller = LedCubeController()
-
-while True:
-    # set all column
-    for layer in range(N):
-        for i in range(N):
-            for j in range(N):
-                GPIO.output(PIN_DATA, GPIO.HIGH if controller.is_on(i, j, layer) else GPIO.LOW)
-                GPIO.output(PIN_CLOCK, GPIO.HIGH)
-                GPIO.output(PIN_CLOCK, GPIO.LOW)
-
-        # select layer
-        for i in range(N):
-            change_output(PIN_DATA, GPIO.HIGH if i == layer else GPIO.LOW)
-            change_output(PIN_CLOCK, GPIO.HIGH)
-            change_output(PIN_CLOCK, GPIO.LOW)
-
-        # display settings
-        change_output(PIN_DISPLAY, GPIO.HIGH)
-        change_output(PIN_DISPLAY, GPIO.LOW)
-        time.sleep(0.00001)
+start_outputting_cube_state(LedCubeController())
