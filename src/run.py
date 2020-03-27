@@ -39,13 +39,6 @@ def empty_cube_state():
 pixels = empty_cube_state()
 
 
-def clear_pixels():
-    for i in range(N):
-        for j in range(N):
-            for k in range(N):
-                pixels[i][j][k] = 0
-
-
 # 00 01 02 03 04 05 06 07
 # 10 11 12 13 14 15 16 17
 # 20 21 22 23 24 25 26 27
@@ -55,7 +48,7 @@ def clear_pixels():
 # 60 61 62 63 64 65 66 67
 # 70 71 72 73 74 75 76 77
 
-class BaseThread(threading.Thread):
+class StoppableThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, daemon=True)
         self.stopped = False
@@ -63,32 +56,59 @@ class BaseThread(threading.Thread):
     def stop(self):
         self.stopped = True
 
-    def stopable_run(self):
+    def stoppable_run(self):
         pass
 
     def run(self):
-        clear_pixels()
+        self.clear_pixels()
         while not self.stopped:
-            self.stopable_run()
+            self.stoppable_run()
+
+    def turn(self, x, y, z, value):
+        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+            pixels[x][y][z] = value
+
+    def turn_on(self, x, y, z):
+        self.turn(x, y, z, 1)
+
+    def turn_off(self, x, y, z):
+        self.turn(x, y, z, 0)
+
+    def is_on(self, x, y, z):
+        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+            return pixels[x][y][z]
+        else:
+            return 0
+
+    def is_off(self, x, y, z):
+        if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
+            return not pixels[x][y][z]
+        else:
+            return 0
+
+    def clear_pixels(self):
+        for i in range(N):
+            for j in range(N):
+                for k in range(N):
+                    self.turn_off(i, j, k)
 
 
-class SnowThread(BaseThread):
+class SnowThread(StoppableThread):
 
-    def stopable_run(self):
+    def stoppable_run(self):
         for i in range(N):
             for j in range(N):
                 for k in reversed(range(N - 1)):
-                    if pixels[i][j][k] == 1:
-                        pixels[i][j][k] = 0
-                        pixels[i][j][k + 1] = 1
+                    if self.is_on(i, j, k):
+                        self.turn_off(i, j, k)
+                        self.turn_on(i, j, k + 1)
 
-        pixels[random.randint(0, N - 1)][random.randint(0, N - 1)][0] = 1
-        pixels[random.randint(0, N - 1)][random.randint(0, N - 1)][0] = 1
+        self.turn_on(random.randint(0, N - 1), random.randint(0, N - 1), 0)
 
         time.sleep(0.1)
 
 
-class WaveThread(BaseThread):
+class WaveThread(StoppableThread):
     def __init__(self):
         super().__init__()
         self.mid_point_height = 0
@@ -97,10 +117,10 @@ class WaveThread(BaseThread):
     def mid_point_acceleration(self):
         return 0.5 if self.mid_point_height <= 3.5 else -0.5
 
-    def stopable_run(self):
+    def stoppable_run(self):
         max_distance = math.sqrt(3.5 ** 2 + 3.5 ** 2)
 
-        clear_pixels()
+        self.clear_pixels()
 
         for i in range(N):
             for j in range(N):
@@ -108,14 +128,14 @@ class WaveThread(BaseThread):
                 k = 3.5 + ((max_distance - distance_from_mid) / max_distance) * (self.mid_point_height - 3.5)
                 k = round(k)
                 if 0 <= k <= 7:
-                    pixels[i][j][k] = 1
+                    self.turn_on(i, j, k)
 
         self.mid_point_height = self.mid_point_height + self.mid_point_velocity
         self.mid_point_velocity = self.mid_point_velocity + self.mid_point_acceleration()
         time.sleep(0.1)
 
 
-class SphereThread(BaseThread):
+class SphereThread(StoppableThread):
     def __init__(self):
         super().__init__()
         self.radius = 0
@@ -127,11 +147,11 @@ class SphereThread(BaseThread):
             for j in range(N):
                 for k in range(N):
                     if math.sqrt((3.5 - i) ** 2 + (3.5 - j) ** 2 + (3.5 - k) ** 2) < self.radius:
-                        pixels[i][j][k] = 1
+                        self.turn_on(i, j, k)
                     else:
-                        pixels[i][j][k] = 0
+                        self.turn_off(i, j, k)
 
-    def stopable_run(self):
+    def stoppable_run(self):
         while self.radius < self.MAX_RADIUS:
             self.radius = self.radius + 0.5
             self.update_pixels()
@@ -173,43 +193,42 @@ class MovingPoint:
             self.velocity[i] = -self.velocity[i]
 
 
-class MovingPointsThread(BaseThread):
+class MovingPointsThread(StoppableThread):
     def __init__(self):
         super().__init__()
         self.points = [
             MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint()
         ]
 
-    def stopable_run(self):
-        clear_pixels()
+    def stoppable_run(self):
+        self.clear_pixels()
         for p in self.points:
-            # pixels[p.x_int()][p.y_int()][p.z_int()] = 1
-            pixels[math.floor(p.position[0])][math.floor(p.position[1])][math.floor(p.position[2])] = 1
-            pixels[math.floor(p.position[0])][math.floor(p.position[1])][math.ceil(p.position[2])] = 1
-            pixels[math.floor(p.position[0])][math.ceil(p.position[1])][math.floor(p.position[2])] = 1
-            pixels[math.floor(p.position[0])][math.ceil(p.position[1])][math.ceil(p.position[2])] = 1
-            pixels[math.ceil(p.position[0])][math.floor(p.position[1])][math.floor(p.position[2])] = 1
-            pixels[math.ceil(p.position[0])][math.floor(p.position[1])][math.ceil(p.position[2])] = 1
-            pixels[math.ceil(p.position[0])][math.ceil(p.position[1])][math.floor(p.position[2])] = 1
-            pixels[math.ceil(p.position[0])][math.ceil(p.position[1])][math.ceil(p.position[2])] = 1
+            self.turn_on(math.floor(p.position[0]), math.floor(p.position[1]), math.floor(p.position[2]))
+            self.turn_on(math.floor(p.position[0]), math.floor(p.position[1]), math.ceil(p.position[2]))
+            self.turn_on(math.floor(p.position[0]), math.ceil(p.position[1]), math.floor(p.position[2]))
+            self.turn_on(math.floor(p.position[0]), math.ceil(p.position[1]), math.ceil(p.position[2]))
+            self.turn_on(math.ceil(p.position[0]), math.floor(p.position[1]), math.floor(p.position[2]))
+            self.turn_on(math.ceil(p.position[0]), math.floor(p.position[1]), math.ceil(p.position[2]))
+            self.turn_on(math.ceil(p.position[0]), math.ceil(p.position[1]), math.floor(p.position[2]))
+            self.turn_on(math.ceil(p.position[0]), math.ceil(p.position[1]), math.ceil(p.position[2]))
             p.move()
         time.sleep(0.1)
 
 
-class PlanesThread(BaseThread):
+class PlanesThread(StoppableThread):
     def __init__(self):
         super().__init__()
         self.i = 0
         self.d = 1
 
-    def stopable_run(self):
+    def stoppable_run(self):
         for i in range(N):
             for j in range(N):
                 for k in range(N):
                     if i == self.i or j == self.i or k == self.i:
-                        pixels[i][j][k] = 1
+                        self.turn_on(i, j, k)
                     else:
-                        pixels[i][j][k] = 0
+                        self.turn_off(i, j, k)
 
         self.i = self.i + self.d
 
