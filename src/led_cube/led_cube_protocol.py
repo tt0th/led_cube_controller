@@ -51,4 +51,3 @@ def start_outputting_cube_state(controller):
             # display settings
             GPIO.output(PIN_DISPLAY, GPIO.HIGH)
             GPIO.output(PIN_DISPLAY, GPIO.LOW)
-            time.sleep(0.00001)
