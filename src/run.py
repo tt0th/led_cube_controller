@@ -177,9 +177,9 @@ class PlanesThread(Animation):
 
 
 class ThreadThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, controller: LedCubeController):
         threading.Thread.__init__(self, daemon=True)
-        self.controller = LedCubeController()
+        self.controller = controller
 
     def run(self):
         while True:
@@ -195,8 +195,9 @@ class ThreadThread(threading.Thread):
             animation.animate(self.controller)
 
 
-ThreadThread().start()
+controller = LedCubeController()
+
+ThreadThread(controller).start()
 
 setup()
-
-start_outputting_cube_state(LedCubeController())
+start_outputting_cube_state(controller)
