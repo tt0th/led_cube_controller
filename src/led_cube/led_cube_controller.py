@@ -2,7 +2,12 @@ from .led_cube import SIZE
 
 
 class LedCubeController:
-    _pixels = [[[0] * SIZE for _ in range(SIZE)] for _ in range(SIZE)]
+    def __init__(self):
+        self._pixels = self._empty_state()
+
+    @staticmethod
+    def _empty_state():
+        return [[[0] * SIZE for _ in range(SIZE)] for _ in range(SIZE)]
 
     def turn(self, x, y, z, value):
         if 0 <= x <= (SIZE - 1) and 0 <= y <= (SIZE - 1) and 0 <= z <= (SIZE - 1):
@@ -27,7 +32,4 @@ class LedCubeController:
             return 0
 
     def clear_pixels(self):
-        for i in range(SIZE):
-            for j in range(SIZE):
-                for k in range(SIZE):
-                    self.turn_off(i, j, k)
+        self._pixels = self._empty_state()
