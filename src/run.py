@@ -49,26 +49,14 @@ class LedCubeController:
                     self.turn_off(i, j, k)
 
 
-class StoppableThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self, daemon=True)
-        self.stopped = False
-
-    def stop(self):
-        self.stopped = True
-
-    def stoppable_run(self, controller: LedCubeController):
+class Animation:
+    def animate(self, controller: LedCubeController):
         pass
 
-    def run(self):
-        controller = LedCubeController()
-        while not self.stopped:
-            self.stoppable_run(controller)
 
+class SnowThread(Animation):
 
-class SnowThread(StoppableThread):
-
-    def stoppable_run(self, controller: LedCubeController):
+    def animate(self, controller: LedCubeController):
         for i in range(SIZE):
             for j in range(SIZE):
                 for k in reversed(range(SIZE - 1)):
@@ -81,7 +69,7 @@ class SnowThread(StoppableThread):
         time.sleep(0.1)
 
 
-class WaveThread(StoppableThread):
+class WaveThread(Animation):
     def __init__(self):
         super().__init__()
         self.mid_point_height = 0
@@ -90,7 +78,7 @@ class WaveThread(StoppableThread):
     def mid_point_acceleration(self):
         return 0.5 if self.mid_point_height <= 3.5 else -0.5
 
-    def stoppable_run(self, controller: LedCubeController):
+    def animate(self, controller: LedCubeController):
         max_distance = math.sqrt(3.5 ** 2 + 3.5 ** 2)
 
         controller.clear_pixels()
@@ -108,7 +96,7 @@ class WaveThread(StoppableThread):
         time.sleep(0.1)
 
 
-class SphereThread(StoppableThread):
+class SphereThread(Animation):
     def __init__(self):
         super().__init__()
         self.radius = 0
@@ -124,7 +112,7 @@ class SphereThread(StoppableThread):
                     else:
                         controller.turn_off(i, j, k)
 
-    def stoppable_run(self, controller: LedCubeController):
+    def animate(self, controller: LedCubeController):
         while self.radius < self.MAX_RADIUS:
             self.radius = self.radius + 0.5
             self.update_pixels(controller)
@@ -166,14 +154,14 @@ class MovingPoint:
             self.velocity[i] = -self.velocity[i]
 
 
-class MovingPointsThread(StoppableThread):
+class MovingPointsThread(Animation):
     def __init__(self):
         super().__init__()
         self.points = [
             MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint(), MovingPoint()
         ]
 
-    def stoppable_run(self, controller: LedCubeController):
+    def animate(self, controller: LedCubeController):
         controller.clear_pixels()
 
         for p in self.points:
@@ -190,13 +178,13 @@ class MovingPointsThread(StoppableThread):
         time.sleep(0.1)
 
 
-class PlanesThread(StoppableThread):
+class PlanesThread(Animation):
     def __init__(self):
         super().__init__()
         self.i = 0
         self.d = 1
 
-    def stoppable_run(self, controller: LedCubeController):
+    def animate(self, controller: LedCubeController):
         for i in range(SIZE):
             for j in range(SIZE):
                 for k in range(SIZE):
@@ -221,34 +209,20 @@ class PlanesThread(StoppableThread):
 class ThreadThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, daemon=True)
+        self.controller = LedCubeController()
 
     def run(self):
         while True:
-            thread = SnowThread()
+            self.run_with_timeout(SnowThread())
+            self.run_with_timeout(WaveThread())
+            self.run_with_timeout(SphereThread())
+            self.run_with_timeout(MovingPointsThread())
+            self.run_with_timeout(PlanesThread())
 
-            thread.start()
-            time.sleep(10)
-            thread.stop()
-
-            thread = WaveThread()
-            thread.start()
-            time.sleep(10)
-            thread.stop()
-
-            thread = SphereThread()
-            thread.start()
-            time.sleep(10)
-            thread.stop()
-
-            thread = MovingPointsThread()
-            thread.start()
-            time.sleep(10)
-            thread.stop()
-
-            thread = PlanesThread()
-            thread.start()
-            time.sleep(10)
-            thread.stop()
+    def run_with_timeout(self, animation):
+        started = time.time()
+        while (time.time() - started) < 10:
+            animation.animate(self.controller)
 
 
 ThreadThread().start()
