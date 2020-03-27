@@ -8,6 +8,7 @@ from led_cube.led_cube import SIZE
 from led_cube.led_cube_protocol import clear_cube, setup, start_outputting_cube_state
 from led_cube.led_cube_controller import LedCubeController
 from led_cube.animations.animation import Animation
+from led_cube.animations.circle import CircleAnimation
 
 
 def signal_handler(sig, frame):
@@ -179,11 +180,12 @@ class ThreadThread(threading.Thread):
 
     def run(self):
         while True:
-            self.run_with_timeout(SnowThread())
-            self.run_with_timeout(WaveThread())
-            self.run_with_timeout(SphereThread())
-            self.run_with_timeout(MovingPointsThread())
-            self.run_with_timeout(PlanesThread())
+            self.run_with_timeout(CircleAnimation())
+            # self.run_with_timeout(SnowThread())
+            # self.run_with_timeout(WaveThread())
+            # self.run_with_timeout(SphereThread())
+            # self.run_with_timeout(MovingPointsThread())
+            # self.run_with_timeout(PlanesThread())
 
     def run_with_timeout(self, animation):
         started = time.time()
