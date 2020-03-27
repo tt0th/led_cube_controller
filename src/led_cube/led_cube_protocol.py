@@ -1,6 +1,6 @@
 import time
 import RPi.GPIO as GPIO
-from .led_cube import SIZE
+from led_cube import SIZE
 
 PIN_DISPLAY = 6
 PIN_DATA = 19
