@@ -317,4 +317,4 @@ while True:
         # display settings
         change_output(PIN_DISPLAY, GPIO.HIGH)
         change_output(PIN_DISPLAY, GPIO.LOW)
-        time.sleep(0.0005)
+        time.sleep(0.00001)
