@@ -284,9 +284,11 @@ ThreadThread().start()
 # setup
 GPIO.setmode(GPIO.BCM)
 
+GPIO.setwarnings(False)
 GPIO.setup(PIN_DISPLAY, GPIO.OUT)
 GPIO.setup(PIN_DATA, GPIO.OUT)
 GPIO.setup(PIN_CLOCK, GPIO.OUT)
+GPIO.setwarnings(True)
 
 
 def change_output(pin, value):
