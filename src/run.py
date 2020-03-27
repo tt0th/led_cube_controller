@@ -7,6 +7,7 @@ import math
 from led_cube.led_cube import SIZE
 from led_cube.led_cube_protocol import clear_cube, setup, start_outputting_cube_state
 from led_cube.led_cube_controller import LedCubeController
+from led_cube.animations.animation import Animation
 
 
 def signal_handler(sig, frame):
@@ -16,11 +17,6 @@ def signal_handler(sig, frame):
 
 
 signal.signal(signal.SIGINT, signal_handler)
-
-
-class Animation:
-    def animate(self, controller: LedCubeController):
-        pass
 
 
 class SnowThread(Animation):
