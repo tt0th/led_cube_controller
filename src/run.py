@@ -4,8 +4,8 @@ import sys
 import threading
 import random
 import math
-from .led_cube import SIZE
-from .led_cube_protocol import clear_cube, setup, start_outputting_cube_state
+from .led_cube.led_cube import SIZE
+from .led_cube.led_cube_protocol import clear_cube, setup, start_outputting_cube_state
 
 
 def signal_handler(sig, frame):
