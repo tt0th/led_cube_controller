@@ -31,14 +31,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def empty_cube_state():
-    return [[[0] * N for _ in range(N)] for _ in range(N)]
-
-
-# global 3D array to hold state
-pixels = empty_cube_state()
-
-
 # 00 01 02 03 04 05 06 07
 # 10 11 12 13 14 15 16 17
 # 20 21 22 23 24 25 26 27
@@ -50,9 +42,12 @@ pixels = empty_cube_state()
 
 
 class LedCubeController:
+
+    _pixels = [[[0] * N for _ in range(N)] for _ in range(N)]
+
     def turn(self, x, y, z, value):
         if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
-            pixels[x][y][z] = value
+            self._pixels[x][y][z] = value
 
     def turn_on(self, x, y, z):
         self.turn(x, y, z, 1)
@@ -62,13 +57,13 @@ class LedCubeController:
 
     def is_on(self, x, y, z):
         if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
-            return pixels[x][y][z]
+            return self._pixels[x][y][z]
         else:
             return 0
 
     def is_off(self, x, y, z):
         if 0 <= x <= 7 and 0 <= y <= 7 and 0 <= z <= 7:
-            return not pixels[x][y][z]
+            return not self._pixels[x][y][z]
         else:
             return 0
 
@@ -299,12 +294,14 @@ change_output(PIN_DISPLAY, GPIO.LOW)
 change_output(PIN_DATA, GPIO.LOW)
 change_output(PIN_CLOCK, GPIO.LOW)
 
+controller = LedCubeController()
+
 while True:
     # set all column
     for layer in range(N):
         for i in range(N):
             for j in range(N):
-                GPIO.output(PIN_DATA, GPIO.HIGH if pixels[i][j][layer] == 1 else GPIO.LOW)
+                GPIO.output(PIN_DATA, GPIO.HIGH if controller.is_on(i, j, layer) else GPIO.LOW)
                 GPIO.output(PIN_CLOCK, GPIO.HIGH)
                 GPIO.output(PIN_CLOCK, GPIO.LOW)
 
