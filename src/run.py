@@ -181,15 +181,15 @@ class ThreadThread(threading.Thread):
     def run(self):
         while True:
             self.run_with_timeout(CircleAnimation())
-            # self.run_with_timeout(SnowThread())
-            # self.run_with_timeout(WaveThread())
-            # self.run_with_timeout(SphereThread())
-            # self.run_with_timeout(MovingPointsThread())
-            # self.run_with_timeout(PlanesThread())
+            self.run_with_timeout(SnowThread())
+            self.run_with_timeout(WaveThread())
+            self.run_with_timeout(SphereThread())
+            self.run_with_timeout(MovingPointsThread())
+            self.run_with_timeout(PlanesThread())
 
     def run_with_timeout(self, animation):
         started = time.time()
-        while (time.time() - started) < 10:
+        while (time.time() - started) < 20:
             animation.animate(self.controller)
 
 
