@@ -13,6 +13,6 @@ class CircleAnimation(Animation):
 
     def animate(self, controller: LedCubeController):
         rotation_matrix = np.array(x_rotation(math.pi / 8))
-        self.point = self.point * rotation_matrix
+        self.point = self.point.dot(rotation_matrix)
         controller.turn_on(self.point[0], self.point[1], self.point[2])
         time.sleep(0.5)
