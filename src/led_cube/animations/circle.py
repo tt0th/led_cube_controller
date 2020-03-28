@@ -12,7 +12,7 @@ class CircleAnimation(Animation):
         self.point = np.array([4, 4, 4])
 
     def animate(self, controller: LedCubeController):
-        rotation_matrix = np.array(angle_axis2mat(math.pi / 8), [1, 1, 1])
+        rotation_matrix = np.array(angle_axis2mat(math.pi / 8, [1, 1, 1]))
 
         controller.turn_off(round(self.point[0]), round(self.point[1]), round(self.point[2]))
         self.point = self.point.dot(rotation_matrix)
