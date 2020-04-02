@@ -17,10 +17,10 @@ class BillboardAnimation(Animation):
     ARROW = [
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
     ]
@@ -58,7 +58,7 @@ class BillboardAnimation(Animation):
         [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0]
     ]
 
-    PICTURE = LINES
+    PICTURE = ARROW
 
     def animate(self, controller: LedCubeController):
         self.clear_relevant_columns(controller)
