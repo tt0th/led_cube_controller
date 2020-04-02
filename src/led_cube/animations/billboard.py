@@ -15,14 +15,14 @@ class BillboardAnimation(Animation):
         self.start_column_index = 0
 
     PICTURE = [
-        [0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 1, 1, 1, 0],
-        [0, 0, 0, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
     ]
 
     def animate(self, controller: LedCubeController):
@@ -30,8 +30,8 @@ class BillboardAnimation(Animation):
 
         self.move_index_forward()
 
-        for layer in range(SIZE):
-            for i in range(SIZE):
+        for layer in range(len(self.PICTURE)):
+            for i in range(len(self.PICTURE[0])):
                 start_point = self.start_columns[self.index_with_offset(i)]
                 if self.PICTURE[layer][i] == 1:
                     controller.turn_on(start_point[0], start_point[1], layer)
