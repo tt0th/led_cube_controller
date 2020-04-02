@@ -192,6 +192,7 @@ class ThreadThread(threading.Thread):
         while True:
             for animation in self.animations:
                 self.run_with_timeout(animation)
+                self.controller.clear_pixels()
 
     def run_with_timeout(self, animation):
         started = time.time()
