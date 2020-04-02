@@ -15,9 +15,17 @@ class BillboardAnimation(Animation):
         self.start_column_index = 0
 
     def animate(self, controller: LedCubeController):
-        self.start_column_index = (self.start_column_index + 1) % len(self.start_columns)
+        for i in range(SIZE):
+            start_point = self.start_columns[self.start_column_index]
+            controller.turn_off(start_point[0], start_point[1], i)
+
+        self.move_index_forward()
+
         for i in range(SIZE):
             start_point = self.start_columns[self.start_column_index]
             controller.turn_on(start_point[0], start_point[1], i)
 
         time.sleep(0.05)
+
+    def move_index_forward(self):
+        self.start_column_index = (self.start_column_index + 1) % len(self.start_columns)
