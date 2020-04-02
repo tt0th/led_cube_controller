@@ -178,16 +178,20 @@ class ThreadThread(threading.Thread):
     def __init__(self, controller: LedCubeController):
         threading.Thread.__init__(self, daemon=True)
         self.controller = controller
+        self.animations = [
+            # CircleAnimation(),
+            SnowThread(),
+            WaveThread(),
+            SphereThread(),
+            MovingPointsThread(),
+            PlanesThread(),
+            BillboardAnimation(),
+        ]
 
     def run(self):
         while True:
-            # self.run_with_timeout(CircleAnimation())
-            # self.run_with_timeout(SnowThread())
-            # self.run_with_timeout(WaveThread())
-            # self.run_with_timeout(SphereThread())
-            # self.run_with_timeout(MovingPointsThread())
-            # self.run_with_timeout(PlanesThread())
-            self.run_with_timeout(BillboardAnimation())
+            for animation in self.animations:
+                self.run_with_timeout(animation)
 
     def run_with_timeout(self, animation):
         started = time.time()
