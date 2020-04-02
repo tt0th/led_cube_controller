@@ -14,18 +14,38 @@ class BillboardAnimation(Animation):
 
         self.start_column_index = 0
 
+    PICTURE = [
+        [0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1, 0],
+        [0, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0]
+    ]
+
     def animate(self, controller: LedCubeController):
-        for i in range(SIZE):
-            start_point = self.start_columns[self.start_column_index]
-            controller.turn_off(start_point[0], start_point[1], i)
+        self.clear_relevant_columns(controller)
 
         self.move_index_forward()
 
-        for i in range(SIZE):
-            start_point = self.start_columns[self.start_column_index]
-            controller.turn_on(start_point[0], start_point[1], i)
+        for layer in range(SIZE):
+            for i in range(SIZE):
+                start_point = self.start_columns[self.index_with_offset(i)]
+                if self.PICTURE[layer][i] == 1:
+                    controller.turn_on(start_point[0], start_point[1], i)
 
-        time.sleep(0.05)
+        time.sleep(0.1)
 
     def move_index_forward(self):
-        self.start_column_index = (self.start_column_index + 1) % len(self.start_columns)
+        self.start_column_index = self.index_with_offset(1)
+
+    def index_with_offset(self, offset):
+        return (self.start_column_index + offset) % len(self.start_columns)
+
+    def clear_relevant_columns(self, controller: LedCubeController):
+        for i in range(SIZE):
+            for j in range(len(self.start_columns)):
+                start_point = self.start_columns[j]
+                controller.turn_off(start_point[0], start_point[1], i)
