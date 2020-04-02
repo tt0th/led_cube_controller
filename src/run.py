@@ -180,11 +180,11 @@ class ThreadThread(threading.Thread):
         self.controller = controller
         self.animations = [
             # CircleAnimation(),
-            SnowThread(),
-            WaveThread(),
-            SphereThread(),
-            MovingPointsThread(),
-            PlanesThread(),
+            # SnowThread(),
+            # WaveThread(),
+            # SphereThread(),
+            # MovingPointsThread(),
+            # PlanesThread(),
             BillboardAnimation(),
         ]
 
