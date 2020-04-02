@@ -34,7 +34,7 @@ class BillboardAnimation(Animation):
             for i in range(SIZE):
                 start_point = self.start_columns[self.index_with_offset(i)]
                 if self.PICTURE[layer][i] == 1:
-                    controller.turn_on(start_point[0], start_point[1], i)
+                    controller.turn_on(start_point[0], start_point[1], layer)
 
         time.sleep(0.1)
 
