@@ -6,12 +6,12 @@ from ..led_cube_controller import LedCubeController, SIZE
 class BillboardAnimation(Animation):
     def __init__(self):
         super().__init__()
-        self.start_columns = [
-            [[i, 0] for i in range(0, SIZE - 1)] +
-            [[SIZE - 1, i] for i in range(0, SIZE - 1)] +
-            [[i, SIZE - 1] for i in reversed(range(1, SIZE))] +
-            [[0, i] for i in reversed(range(1, SIZE))]
-        ]
+        self.start_columns = [] + \
+                             [[i, 0] for i in range(0, SIZE - 1)] + \
+                             [[SIZE - 1, i] for i in range(0, SIZE - 1)] + \
+                             [[i, SIZE - 1] for i in reversed(range(1, SIZE))] + \
+                             [[0, i] for i in reversed(range(1, SIZE))]
+
         self.start_column_index = 0
 
     def animate(self, controller: LedCubeController):
